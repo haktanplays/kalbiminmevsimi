@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-destructive: var(--destructive);
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-noto-serif);
+}
+
+:root {
+  --background: #f0f7ff;
+  --foreground: #1e293b;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #e0f2fe;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f59e0b;
+  --accent-foreground: #ffffff;
+  --border: #bfdbfe;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --destructive: #dc2626;
+}
+
+.dark {
+  --background: #0c1929;
+  --foreground: #e2e8f0;
+  --primary: #60a5fa;
+  --primary-foreground: #0c1929;
+  --secondary: #1a2d47;
+  --secondary-foreground: #e2e8f0;
+  --muted: #162032;
+  --muted-foreground: #94a3b8;
+  --accent: #fbbf24;
+  --accent-foreground: #0c1929;
+  --border: #1e3a5f;
+  --card: #132035;
+  --card-foreground: #e2e8f0;
+  --destructive: #ef4444;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Prose styles for article content */
+.prose {
+  max-width: 72ch;
+  line-height: 1.8;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.prose ul,
+.prose ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose img {
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose mark {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.125rem;
+}
