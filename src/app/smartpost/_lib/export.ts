@@ -68,6 +68,31 @@ export function createStamp(date: Date = new Date()): string {
   ].join("-");
 }
 
+/**
+ * Arka planı `data:` URL'e çevirir. iOS Safari, foreignObject içindeki bir
+ * `blob:` kaynağını rasterize ederken çoğu zaman boş bırakıyor; kaynak baştan
+ * gömülü olursa html-to-image'ın ayrıca indirmesi gerekmiyor.
+ */
+const inlinedBackgrounds = new Map<string, string>();
+
+async function toInlineDataUrl(url: string): Promise<string> {
+  if (url.startsWith("data:")) return url;
+  const cached = inlinedBackgrounds.get(url);
+  if (cached) return cached;
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Arka plan okunamadı.");
+  const blob = await response.blob();
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Arka plan okunamadı."));
+    reader.readAsDataURL(blob);
+  });
+  inlinedBackgrounds.set(url, dataUrl);
+  return dataUrl;
+}
+
 function dataUrlToBlob(dataUrl: string): Blob {
   const [header, encoded] = dataUrl.split(",");
   const mime = header.match(/:(.*?);/)?.[1] ?? "image/png";
@@ -118,6 +143,12 @@ export async function renderPagesToFiles(
 
   await document.fonts.ready;
 
+  // Export'a giden kopya, arka planı gömülü taşır (iOS Safari için).
+  const exportSettings: PostSettings = {
+    ...settings,
+    backgroundUrl: await toInlineDataUrl(settings.backgroundUrl),
+  };
+
   const container = document.createElement("div");
   container.setAttribute("aria-hidden", "true");
   container.style.position = "fixed";
@@ -138,7 +169,7 @@ export async function renderPagesToFiles(
             createElement(PostCanvas, {
               key: index,
               page,
-              settings,
+              settings: exportSettings,
               pageNumber: index + 1,
             })
           )
@@ -163,19 +194,28 @@ export async function renderPagesToFiles(
     const height = CANVAS_HEIGHT[settings.format];
     // Sayfaların hepsi aynı fontları kullanır; bir kez gömülüp yeniden kullanılır.
     const fontEmbedCSS = await primeFontEmbedCSS();
+    const options = {
+      width: CANVAS_WIDTH,
+      height,
+      pixelRatio: 1,
+      // Arka plan gömülü bir data URL; bust parametresi onu bozar.
+      cacheBust: false,
+      fontEmbedCSS: fontEmbedCSS || undefined,
+    };
+
+    /**
+     * iOS Safari ilk geçişte foreignObject'i gömülü görsel hazır olmadan
+     * rasterize edip arka planı boş bırakabiliyor; ikinci geçiş sıcak
+     * önbellekle doğru sonucu veriyor. Font gömme zaten önbellekli olduğundan
+     * ek geçiş sayfa başına ~60 ms, 10 sayfada bile bütçenin altında.
+     */
+    const renderNode = async (node: HTMLElement) => {
+      await toPng(node, options);
+      return toPng(node, options);
+    };
+
     const dataUrls = await withTimeout(
-      Promise.all(
-        nodes.map((node) =>
-          toPng(node, {
-            width: CANVAS_WIDTH,
-            height,
-            pixelRatio: 1,
-            // The background is an object URL; a cache-busting query breaks it.
-            cacheBust: false,
-            fontEmbedCSS: fontEmbedCSS || undefined,
-          })
-        )
-      ),
+      Promise.all(nodes.map(renderNode)),
       RENDER_TIMEOUT_MS
     );
 
