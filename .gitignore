@@ -42,3 +42,6 @@ SIFRELER.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SmartPost arka planlarının PNG orijinalleri (public/ içinde JPEG sürümleri var)
+/arkaplan-orijinal
